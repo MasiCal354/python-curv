@@ -1,14 +1,15 @@
 import requests
 from requests.exceptions import HTTPError
-from .exceptions import CurvRequestException
+from .exceptions import CurvRequestException, CurvMissingParams
 from .auth import CurvAuth
 
 class CurvClient:
     API_VERSION = "v1.0"
 
-    def __init__(self, host, jwt, requests_session=requests.Session()):
+    def __init__(self, host, jwt, organization_id=None, requests_session=requests.Session()):
         self.__base_url = host + "/api/policy/{}/".format(self.API_VERSION)
         self.__jwt = jwt
+        self.__organization_id = organization_id
         self.__requests_session = requests_session
 
     def _handle_response(self):
@@ -52,59 +53,77 @@ class CurvClient:
 
     # Curv Endpoint
 
-    def list_all_saved_addresses(self, organization_id, params=None):
+    def list_all_saved_addresses(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_entry/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def save_new_address(self, organization_id, params=None):
+    def save_new_address(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_entry/create_new/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def get_saved_address(self, organization_id,
-                          address_book_entry_id, params=None):
+    def get_saved_address(self, address_book_entry_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_entry/{}/"
         path = path.format(organization_id, address_book_entry_id)
         return self._get(path, params)
 
-    def list_all_address_lists(self, organization_id, params=None):
+    def list_all_address_lists(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_list/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def create_new_address_list(self, organization_id, params=None):
+    def create_new_address_list(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_list/create_new/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def get_address_list(self, organization_id,
-                         address_book_list_id, params=None):
+    def get_address_list(self, address_book_list_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_list/{}/"
         path = path.format(organization_id, address_book_list_id)
         return self._get(path, params)
 
     def list_address_list_entries(
-            self, organization_id, address_book_list_id, params=None):
+            self, address_book_list_id, params=None):
+    organization_id = self._get_organization_id()
+    if organization_id is None:
+        raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_list/{}/members/"
         path = path.format(organization_id, address_book_list_id)
         return self._get(path, params)
 
-    def add_address_to_list(self, organization_id,
-                            address_book_list_id, params=None):
+    def add_address_to_list(self, address_book_list_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_list/{}/members/create_new/"
         path = path.format(organization_id, address_book_list_id)
         return self._post(path, params)
 
-    def remove_address_from_list(
-            self,
-            organization_id,
-            address_book_list_id,
-            address_book_entry_id,
-            params=None):
+    def remove_address_from_list(self, address_book_list_id, address_book_entry_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/address_book/address_book_list/{}/members/{}/"
-        path = path.format(
-            organization_id, address_book_list_id, address_book_entry_id)
+        path = path.format(organization_id, address_book_list_id, address_book_entry_id)
         return self._delete(path, params)
 
     def get_usd_based_exchange_rates(self, params=None):
@@ -112,49 +131,74 @@ class CurvClient:
         path = path.format()
         return self._get(path, params)
 
-    def list_currencies(self, organization_id, params=None):
+    def list_currencies(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/currency/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_currency_information(
-            self, organization_id, currency_id, params=None):
+    def get_currency_information(self, currency_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/currency/{}/"
         path = path.format(organization_id, currency_id)
         return self._get(path, params)
 
-    def get_suggested_transaction_fees(
-            self, organization_id, currency_id, params=None):
+    def get_suggested_transaction_fees(self, currency_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/currency/{}/transaction_fees/"
         path = path.format(organization_id, currency_id)
         return self._get(path, params)
 
-    def list_device_keys(self, organization_id, params=None):
+    def list_device_keys(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/device/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_device_key(self, organization_id, device_key_id, params=None):
+    def get_device_key(self, device_key_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/device/{}/"
         path = path.format(organization_id, device_key_id)
         return self._get(path, params)
 
-    def list_keys(self, organization_id, params=None):
+    def list_keys(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/keys/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_key(self, organization_id, key_id, params=None):
+    def get_key(self, key_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/keys/{}/"
         path = path.format(organization_id, key_id)
         return self._get(path, params)
 
-    def generate_key(self, organization_id, params=None):
+    def generate_key(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/key_generation/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def load_key(self, organization_id, params=None):
+    def load_key(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/load_key/"
         path = path.format(organization_id)
         return self._post(path, params)
@@ -164,446 +208,604 @@ class CurvClient:
         path = path.format()
         return self._get(path, params)
 
-    def get_organization_information(self, organization_id, params=None):
+    def get_organization_information(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def set_backup_public_key(self, organization_id, params=None):
+    def set_backup_public_key(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/set_backup_public_key/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def get_recovery_info(self, organization_id, params=None):
+    def get_recovery_info(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/key_recovery/get_recovery_info/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def refresh_share(self, organization_id, params=None):
+    def refresh_share(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/refresh/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def send_share(self, organization_id, params=None):
+    def send_share(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/send_share/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def receive_shares(self, organization_id, params=None):
+    def receive_shares(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/receive_shares/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def provision_device(self, organization_id, params=None):
+    def provision_device(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/provision_device/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def has_key_share(self, organization_id, params=None):
+    def has_key_share(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/has_key_share/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def self_managed_generate_key(self, organization_id, params=None):
+    def self_managed_generate_key(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/self_managed_secure_operations/key_generation/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def self_managed_sign_transaction(self, organization_id, params=None):
+    def self_managed_sign_transaction(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/self_managed_secure_operations/sign_transaction/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def self_managed_sign_and_schedule_transaction(
-            self, organization_id, params=None):
+    def self_managed_sign_and_schedule_transaction(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/self_managed_secure_operations/sign_and_push/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def self_managed_load_provisioning_package(
-            self, organization_id, params=None):
+    def self_managed_load_provisioning_package(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/self_managed_secure_operations/load_provisioning_package/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def self_managed_refresh_share(self, organization_id, params=None):
+    def self_managed_refresh_share(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/self_managed_secure_operations/refresh/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def self_managed_retrieve_transaction(self, organization_id, params=None):
+    def self_managed_retrieve_transaction(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/self_managed_secure_operations/retrieve_and_parse_transaction/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def self_managed_send_share(self, organization_id, params=None):
+    def self_managed_send_share(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/self_managed_secure_operations/send_share/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def self_managed_receive_shares(self, organization_id, params=None):
+    def self_managed_receive_shares(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/self_managed_secure_operations/receive_shares/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def list_service_accounts(self, organization_id, params=None):
+    def list_service_accounts(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/service_account/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_service_account(self, organization_id,
-                            service_account_id, params=None):
+    def get_service_account(self, service_account_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/service_account/{}/"
         path = path.format(organization_id, service_account_id)
         return self._get(path, params)
 
-    def list_transactions(self, organization_id, params=None):
+    def list_transactions(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/all_transactions/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_transaction(self, organization_id, transaction_id, params=None):
+    def get_transaction(self, transaction_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/all_transactions/{}/"
         path = path.format(organization_id, transaction_id)
         return self._get(path, params)
 
-    def list_outgoing_transactions(self, organization_id, params=None):
+    def list_outgoing_transactions(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transaction/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def create_transaction(self, organization_id, params=None):
+    def create_transaction(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transaction/create_new/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def get_outgoing_transaction(
-            self, organization_id, transaction_id, params=None):
+    def get_outgoing_transaction(self, transaction_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transaction/{}/"
         path = path.format(organization_id, transaction_id)
         return self._get(path, params)
 
-    def abort_transaction(self, organization_id, transaction_id, params=None):
+    def abort_transaction(self, transaction_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transaction/{}/abort/"
         path = path.format(organization_id, transaction_id)
         return self._delete(path, params)
 
-    def schedule_transaction(self, organization_id,
-                             transaction_id, params=None):
+    def schedule_transaction(self, transaction_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transaction/{}/push_to_chain/"
         path = path.format(organization_id, transaction_id)
         return self._post(path, params)
 
-    def vote_on_transaction(self, organization_id,
-                            transaction_id, params=None):
+    def vote_on_transaction(self, transaction_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transaction/{}/vote/"
         path = path.format(organization_id, transaction_id)
         return self._post(path, params)
 
-    def retrieve_transaction_voting_status(
-            self, organization_id, transaction_id, params=None):
+    def retrieve_transaction_voting_status(self, transaction_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transaction/{}/voting_status/"
         path = path.format(organization_id, transaction_id)
         return self._get(path, params)
 
-    def sign_transaction(self, organization_id, params=None):
+    def sign_transaction(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/sign_transaction/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def create_and_sign_blackbox_transaction(
-            self, organization_id, params=None):
+    def create_and_sign_blackbox_transaction(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/create_and_sign_blackbox/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def retrieve_transaction_for_signing(self, organization_id, params=None):
+    def retrieve_transaction_for_signing(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/retrieve_transaction/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def mark_transaction_as_valid(self, organization_id, params=None):
+    def mark_transaction_as_valid(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/mark_transaction_validated/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def mark_sign_and_schedule_transaction(self, organization_id, params=None):
+    def mark_sign_and_schedule_transaction(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/secure_operations/mark_sign_and_push/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def get_transactions_log(self, organization_id, params=None):
+    def get_transactions_log(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transactions_log/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def download_transaction_log_csv_file(self, organization_id, params=None):
+    def download_transaction_log_csv_file(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transactions_log/csv/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def download_transaction_log_v2_csv_file(
-            self, organization_id, params=None):
+    def download_transaction_log_v2_csv_file(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/transactions_log_v2/csv/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def list_transaction_rules_for_wallet(
-            self, organization_id, wallet_id, params=None):
+    def list_transaction_rules_for_wallet(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/policy/transaction_policy_rule/"
         path = path.format(organization_id, wallet_id)
         return self._get(path, params)
 
-    def create_transaction_rule_for_wallet(
-            self, organization_id, wallet_id, params=None):
+    def create_transaction_rule_for_wallet(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/policy/transaction_policy_rule/create_new/"
         path = path.format(organization_id, wallet_id)
         return self._post(path, params)
 
-    def get_transaction_rule_for_wallet(
-            self,
-            organization_id,
-            wallet_id,
-            transaction_policy_rule_id,
-            params=None):
+    def get_transaction_rule_for_wallet(self, wallet_id, transaction_policy_rule_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/policy/transaction_policy_rule/{}/"
-        path = path.format(organization_id, wallet_id,
-                           transaction_policy_rule_id)
+        path = path.format(organization_id, wallet_id, transaction_policy_rule_id)
         return self._get(path, params)
 
-    def delete_transaction_rule_for_wallet(
-            self,
-            organization_id,
-            wallet_id,
-            transaction_policy_rule_id,
-            params=None):
+    def delete_transaction_rule_for_wallet(self, wallet_id, transaction_policy_rule_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/policy/transaction_policy_rule/{}/"
-        path = path.format(organization_id, wallet_id,
-                           transaction_policy_rule_id)
+        path = path.format(organization_id, wallet_id, transaction_policy_rule_id)
         return self._delete(path, params)
 
-    def list_transaction_rules_for_wallet_group(
-            self, organization_id, wallet_group_id, params=None):
+    def list_transaction_rules_for_wallet_group(self, wallet_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/policy/transaction_policy_rule/"
         path = path.format(organization_id, wallet_group_id)
         return self._get(path, params)
 
-    def create_transaction_rule_for_wallet_group(
-            self, organization_id, wallet_group_id, params=None):
+    def create_transaction_rule_for_wallet_group(self, wallet_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/policy/transaction_policy_rule/create_new/"
         path = path.format(organization_id, wallet_group_id)
         return self._post(path, params)
 
-    def get_transaction_rule_for_wallet_group(
-            self,
-            organization_id,
-            wallet_group_id,
-            transaction_policy_rule_id,
-            params=None):
+    def get_transaction_rule_for_wallet_group(self, wallet_group_id, transaction_policy_rule_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/policy/transaction_policy_rule/{}/"
-        path = path.format(organization_id, wallet_group_id,
-                           transaction_policy_rule_id)
+        path = path.format(organization_id, wallet_group_id, transaction_policy_rule_id)
         return self._get(path, params)
 
-    def list_users(self, organization_id, params=None):
+    def list_users(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/all_users/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_user(self, organization_id, user, params=None):
+    def get_user(self, user, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/all_users/{}/"
         path = path.format(organization_id, user)
         return self._get(path, params)
 
-    def list_organization_users(self, organization_id, params=None):
+    def list_organization_users(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/user/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_organization_user_by_email(self, organization_id, params=None):
+    def get_organization_user_by_email(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/user/get_organization_user_by_email/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def get_user_information(self, organization_id, user, params=None):
+    def get_user_information(self, user, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/user/{}/"
         path = path.format(organization_id, user)
         return self._get(path, params)
 
-    def list_user_groups(self, organization_id, params=None):
+    def list_user_groups(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/user_group/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_user_group_information(
-            self, organization_id, user_group_id, params=None):
+    def get_user_group_information(self, user_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/user_group/{}/"
         path = path.format(organization_id, user_group_id)
         return self._get(path, params)
 
-    def list_user_group_members(
-            self, organization_id, user_group_id, params=None):
+    def list_user_group_members(self, user_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/user_group/{}/group_members/"
         path = path.format(organization_id, user_group_id)
         return self._get(path, params)
 
-    def list_wallets(self, organization_id, params=None):
+    def list_wallets(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def create_wallet(self, organization_id, params=None):
+    def create_wallet(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/create_new/"
         path = path.format(organization_id)
         return self._post(path, params)
 
-    def get_wallet(self, organization_id, wallet_id, params=None):
+    def get_wallet(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/"
         path = path.format(organization_id, wallet_id)
         return self._get(path, params)
 
-    def get_max_withdrawable_funds(
-            self, organization_id, wallet_id, params=None):
+    def get_max_withdrawable_funds(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/get_max_withdrawable_funds/"
         path = path.format(organization_id, wallet_id)
         return self._post(path, params)
 
-    def list_incoming_transactions(
-            self, organization_id, wallet_id, params=None):
+    def list_incoming_transactions(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/incoming_transactions/"
         path = path.format(organization_id, wallet_id)
         return self._get(path, params)
 
-    def get_incoming_transaction(
-            self,
-            organization_id,
-            wallet_id,
-            incoming_transaction_id,
-            params=None):
+    def get_incoming_transaction(self, wallet_id, incoming_transaction_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/incoming_transactions/{}/"
         path = path.format(organization_id, wallet_id, incoming_transaction_id)
         return self._get(path, params)
 
-    def set_wallet_visibility(self, organization_id, wallet_id, params=None):
+    def set_wallet_visibility(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/set_visibility/"
         path = path.format(organization_id, wallet_id)
         return self._post(path, params)
 
-    def list_wallet_membership(self, organization_id, wallet_id, params=None):
+    def list_wallet_membership(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/wallet_group/"
         path = path.format(organization_id, wallet_id)
         return self._get(path, params)
 
-    def list_wallet_groups(self, organization_id, params=None):
+    def list_wallet_groups(self, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/"
         path = path.format(organization_id)
         return self._get(path, params)
 
-    def get_wallet_group_information(
-            self, organization_id, wallet_group_id, params=None):
+    def get_wallet_group_information(self, wallet_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/"
         path = path.format(organization_id, wallet_group_id)
         return self._get(path, params)
 
-    def list_wallet_group_members(
-            self, organization_id, wallet_group_id, params=None):
+    def list_wallet_group_members(self, wallet_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/wallet_group_members/"
         path = path.format(organization_id, wallet_group_id)
         return self._get(path, params)
 
-    def add_wallet_to_wallet_group(
-            self, organization_id, wallet_group_id, params=None):
+    def add_wallet_to_wallet_group(self, wallet_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/wallet_group_members/create_new/"
         path = path.format(organization_id, wallet_group_id)
         return self._post(path, params)
 
-    def remove_wallet_from_wallet_group(
-            self, organization_id, wallet_group_id, wallet_id, params=None):
+    def remove_wallet_from_wallet_group(self, wallet_group_id, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/wallet_group_members/{}/"
         path = path.format(organization_id, wallet_group_id, wallet_id)
         return self._delete(path, params)
 
-    def list_wallet_addresses(self, organization_id, wallet_id, params=None):
+    def list_wallet_addresses(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/wallet_address/"
         path = path.format(organization_id, wallet_id)
         return self._get(path, params)
 
-    def create_wallet_address(self, organization_id, wallet_id, params=None):
+    def create_wallet_address(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/wallet_address/create_new/"
         path = path.format(organization_id, wallet_id)
         return self._post(path, params)
 
-    def get_wallet_address(self, organization_id, wallet_id,
-                           wallet_address_id, params=None):
+    def get_wallet_address(self, wallet_id, wallet_address_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/wallet_address/{}/"
         path = path.format(organization_id, wallet_id, wallet_address_id)
         return self._get(path, params)
 
-    def rename_wallet_address(self, organization_id,
-                              wallet_id, wallet_address_id, params=None):
+    def rename_wallet_address(self, wallet_id, wallet_address_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/wallet_address/{}/rename/"
         path = path.format(organization_id, wallet_id, wallet_address_id)
         return self._post(path, params)
 
-    def set_wallet_address_visibility(
-            self, organization_id, wallet_id, wallet_address_id, params=None):
+    def set_wallet_address_visibility(self, wallet_id, wallet_address_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/wallet_address/{}/set_visibility/"
         path = path.format(organization_id, wallet_id, wallet_address_id)
         return self._post(path, params)
 
-    def list_wallet_rules_for_wallet(
-            self, organization_id, wallet_id, params=None):
+    def list_wallet_rules_for_wallet(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/policy/wallet_policy_rule/"
         path = path.format(organization_id, wallet_id)
         return self._get(path, params)
 
-    def create_wallet_rule_for_wallet(
-            self, organization_id, wallet_id, params=None):
+    def create_wallet_rule_for_wallet(self, wallet_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/policy/wallet_policy_rule/create_new/"
         path = path.format(organization_id, wallet_id)
         return self._post(path, params)
 
-    def get_wallet_rule_for_wallet(
-            self,
-            organization_id,
-            wallet_id,
-            wallet_policy_rule_id,
-            params=None):
+    def get_wallet_rule_for_wallet(self, wallet_id, wallet_policy_rule_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/policy/wallet_policy_rule/{}/"
         path = path.format(organization_id, wallet_id, wallet_policy_rule_id)
         return self._get(path, params)
 
-    def delete_wallet_rule_for_wallet(
-            self,
-            organization_id,
-            wallet_id,
-            wallet_policy_rule_id,
-            params=None):
+    def delete_wallet_rule_for_wallet(self, wallet_id, wallet_policy_rule_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet/{}/policy/wallet_policy_rule/{}/"
         path = path.format(organization_id, wallet_id, wallet_policy_rule_id)
         return self._delete(path, params)
 
-    def list_wallet_rules_for_wallet_group(
-            self, organization_id, wallet_group_id, params=None):
+    def list_wallet_rules_for_wallet_group(self, wallet_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/policy/wallet_policy_rule/"
         path = path.format(organization_id, wallet_group_id)
         return self._get(path, params)
 
-    def create_wallet_rule_for_wallet_group(
-            self, organization_id, wallet_group_id, params=None):
+    def create_wallet_rule_for_wallet_group(self, wallet_group_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/policy/wallet_policy_rule/create_new/"
         path = path.format(organization_id, wallet_group_id)
         return self._post(path, params)
 
-    def get_wallet_rule_for_wallet_group(
-            self,
-            organization_id,
-            wallet_group_id,
-            wallet_policy_rule_id,
-            params=None):
+    def get_wallet_rule_for_wallet_group(self, wallet_group_id, wallet_policy_rule_id, params=None):
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise CurvMissingParams("Organization ID is not set")
         path = "organization/{}/wallet_group/{}/policy/wallet_policy_rule/{}/"
-        path = path.format(organization_id, wallet_group_id,
-                           wallet_policy_rule_id)
+        path = path.format(organization_id, wallet_group_id, wallet_policy_rule_id)
         return self._get(path, params)
 
     def get_debug_information(self, params=None):
@@ -628,6 +830,9 @@ class CurvClient:
 
     def _get_jwt(self):
         return self.__jwt
+
+    def _get_organization_id(self):
+        return self.__organization_id
 
     def _get_requests_session(self):
         return self.__requests_session
